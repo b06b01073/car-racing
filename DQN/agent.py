@@ -9,10 +9,11 @@ import torchvision.transforms.functional as TF
 from PIL import Image
 from . import hyperparams 
 
+
 # this import the CNN(note that the cwd need to be the root folder)
 from utils.CNN import CNN, DuelCNN
 
-random.seed(700)
+random.seed(777)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -26,6 +27,8 @@ eps_step = config['eps_step']
 tau = config['tau']
 batch_size = config['batch_size']
 
+print(lr, gamma, eps)
+
 class Agent():
     def __init__(self, action_dim, obs_dim, train_mode=True, duel=False):
         self.action_dim = action_dim
@@ -35,7 +38,6 @@ class Agent():
         self.eval_network = DuelCNN(action_dim) if duel else CNN(action_dim) 
         self.target_network = DuelCNN(action_dim) if duel else CNN(action_dim)
         self.target_network.load_state_dict(self.eval_network.state_dict())
-        self.target_network.eval()
 
 
         print(f'DQNAgent: The network is on {device}')
@@ -44,8 +46,8 @@ class Agent():
         self.train_mode = train_mode
 
         self.lr = lr
-        self.loss_fn = nn.SmoothL1Loss()
-        self.optim = torch.optim.Adam(self.eval_network.parameters(), lr=lr)
+        self.loss_fn = nn.MSELoss()
+        self.optim = torch.optim.RMSprop(self.eval_network.parameters(), lr=lr, weight_decay=0.01)
 
         self.gamma = gamma
         self.eps = eps
@@ -61,17 +63,16 @@ class Agent():
     def preprocess(self, obs):
         # convert (h, w, c) to (c, h, w)
 
-        # stacked_obs = []
         transformer = transforms.Compose([
-            transforms.ToTensor(),
+            transforms.Grayscale(),
+            transforms.Resize((120, 84)),
             transforms.CenterCrop((84, 84)),
         ])
         obs = np.asarray(obs)
         stacked_obs = []
 
         for i in range(len(obs)):
-            img = Image.fromarray(obs[i]).convert('L')
-            stacked_obs.append(transformer(img).squeeze())
+            stacked_obs.append(transformer(torch.Tensor(obs[i]).permute(2, 0, 1)).squeeze())
 
         return torch.stack(stacked_obs)
 
@@ -102,11 +103,8 @@ class DQNAgent(Agent):
         with torch.no_grad():
             obs = obs.unsqueeze(0).to(device) # obs.shape is (1, 4, h, w), the unsqueeze treat the obs as a batch with batch size = 1
 
-            action_scores = self.eval_network(obs)
-            if not self.train_mode:
-                return torch.argmax(action_scores).item()
+            action_scores = self.eval_network(obs).squeeze()
 
-            obs = obs.squeeze()
 
             # return the action based on epsilon-greedy strategy
             return random.randint(0, self.action_dim - 1) if random.random() < self.eps else torch.argmax(action_scores).item()
@@ -115,16 +113,17 @@ class DQNAgent(Agent):
     def learn(self, replay_buffer):
         obs, actions, rewards, next_obs, terminals = replay_buffer.sample(self.batch_size)
 
-        Q_eval = self.eval_network(obs.to(device)).gather(1, actions.reshape(-1, 1).to(device)).squeeze()
+
+        Q_eval = self.eval_network(obs.to(device)).gather(1, actions.reshape(-1, 1).to(device)).flatten()
         Q_target = torch.max(self.target_network(next_obs.to(device)), dim=1)[0]
         y = rewards.to(device) + self.gamma * Q_target * (1 - terminals.to(device))
 
-
-        loss = self.loss_fn(Q_eval, y.detach())
+        loss = self.loss_fn(Q_eval, y)
         self.optim.zero_grad()
         loss.backward()
-
         self.optim.step() 
+
+        return loss
 
 
 class DDQNAgent(Agent):
@@ -170,18 +169,6 @@ class DDQNAgent(Agent):
             param.grad.data.clamp_(-1, 1)
 
         self.optim.step() 
-
-
-class DQN():
-    def __init__(self, action_dim):
-        self.model = CNN(self.action_dim).to(device)
-
-    def forward(self, x):
-        return self.model(x)
-
-# class DuelDQN():
-#     def __init__(self, action_dim):
-#         self.model = Duel
 
 def get_agent(algo, action_dim, obs_dim):
     if algo == 'DQN':

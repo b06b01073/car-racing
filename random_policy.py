@@ -6,8 +6,8 @@ from tqdm import tqdm
 random.seed(301)
 
 def main():
-    env = gym.make('ALE/Breakout-v5')
-    episodes = 600
+    env = gym.make('CarRacing-v2', continuous=False)
+    episodes = 100
     total_rewards = []
 
 
@@ -15,7 +15,7 @@ def main():
         env.reset()
         total_reward = 0
         while True:
-            action = random.choice(range(env.action_space.n))
+            action = random.randint(0, env.action_space.n - 1)
             obs, reward, terminated, truncated, _ = env.step(action) 
             total_reward += reward
             if terminated or truncated:
