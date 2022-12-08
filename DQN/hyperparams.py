@@ -1,6 +1,6 @@
 config = dict(
-    lr = 1e-4, 
-    gamma = 0.9998,
+    lr = 1e-2, 
+    gamma = 0.99,
     eps = 1,
     eps_low = 0.1, 
     eps_decay = 0.975, 

@@ -58,6 +58,7 @@ class Agent():
 
         self.tau = tau
         self.batch_size = batch_size
+        self.lr_scheduler = lr_scheduler.MultiStepLR(self.optim, milestones=[100, 300, 500, 700, 900], gamma=0.1)
 
 
     def preprocess(self, obs):

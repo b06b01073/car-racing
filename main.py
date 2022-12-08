@@ -18,12 +18,12 @@ def main(algo):
     buffer_capacity = 100000
     replay_buffer = ReplayBuffer(buffer_capacity)
 
-    episodes = 1200
+    episodes = 3000
     update_interval = 10
     print(env.action_space.n)
     agent = Agent.get_agent(algo, env.action_space.n, env.observation_space)    
     total_rewards = []
-    check_points = [x for x in range(0, episodes + 1, 100)]
+    check_points = [x for x in range(0, episodes + 1, 50)]
     step = 0
     losses = []
 
@@ -33,12 +33,12 @@ def main(algo):
         total_reward = 0
         episode_loss = 0
 
-        for _ in range(50):
-            obs, _, _, _, _ = env.step(0)
+
+        obs = ignore_frames(env, frames=30)
 
         processed_obs = agent.preprocess(obs)
 
-        save_image(processed_obs[0], 'image/first_game_screen.png')
+        save_image(processed_obs[0] / 255, 'image/first_game_screen.png')
 
 
         game_step = 0
@@ -63,7 +63,7 @@ def main(algo):
                 
 
             step += 1
-            if step % 500 == 0:
+            if step % 1000 == 0:
                 agent.eps_scheduler(mode='linear')
 
             if terminated or truncated:
@@ -72,6 +72,7 @@ def main(algo):
 
         if i % update_interval == 0:
             agent.hard_update()
+        agent.lr_scheduler.step()
 
         with torch.no_grad():
             losses.append(torch.sum(torch.abs(episode_loss)).item() / game_step)
@@ -95,6 +96,11 @@ def main(algo):
         plt.savefig('losses')
         plt.close()
 
+
+def ignore_frames(env, frames=30):
+    for _ in range(frames):
+        obs, _, _, _, _ = env.step(3)
+    return obs
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
