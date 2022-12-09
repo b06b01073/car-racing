@@ -1,3 +1,4 @@
 *__pycache__*
-*.pth
+# *.pth
 test.py
+DQN/model

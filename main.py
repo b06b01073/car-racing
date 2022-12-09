@@ -34,7 +34,7 @@ def main(algo):
         episode_loss = 0
 
 
-        obs = ignore_frames(env, frames=30)
+        # obs = ignore_frames(env, frames=30)
 
         processed_obs = agent.preprocess(obs)
 
@@ -63,7 +63,7 @@ def main(algo):
                 
 
             step += 1
-            if step % 1000 == 0:
+            if step % 3000 == 0:
                 agent.eps_scheduler(mode='linear')
 
             if terminated or truncated:

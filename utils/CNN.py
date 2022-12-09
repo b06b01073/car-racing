@@ -40,21 +40,21 @@ class DuelCNN(nn.Module):
         self.action_dim = action_dim
 
         self.cnn = nn.Sequential(
-            nn.Conv2d(in_channels=4, out_channels=32, kernel_size=8, stride=4),
+            nn.Conv2d(in_channels=4, out_channels=64, kernel_size=8, stride=4),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=5, stride=3),
+            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=5, stride=2),
             nn.ReLU(),    
         ).to(device)
 
         self.state_value = nn.Sequential(
-            nn.Linear(1152, 64),
+            nn.Linear(2048, 64),
             nn.ReLU(),
             nn.Linear(64, 1)
         ).to(device)
 
         self.advantage = nn.Sequential(
-            nn.Linear(1152, 64),
+            nn.Linear(2048, 64),
             nn.ReLU(),
             nn.Linear(64, self.action_dim)
         ).to(device)
