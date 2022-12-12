@@ -45,7 +45,7 @@ Since an episode is truncated automatically when it reach the 1000th frame of th
 ## Evaluation and Result
 
 ### Policy Comparison
-The average reward of random policy is roughly -55.7034(calculated from 100 episodes of random gameplay). The average reward of a human player is 802.745(from 20 episodes of gameplay, the data can be found in `result\human\reward.txt`). The best trained agent obtained an average reward of 742.591(from 20 episodes of gameplay, the data can be found in `result\human\reward.txt`), which reach human-level gameplay(the best agent is selected by `eval.py`).
+The average reward of random policy is roughly -55.7034(calculated from 100 episodes of random gameplay). The average reward of a human player is 802.745(from 20 episodes of gameplay, the data can be found in `result\human\reward.txt`). The best trained agent obtained an average reward of 742.591(from 20 episodes of gameplay), which reach human-level gameplay(the best agent is selected by `eval.py`).
 
 |  player   | average reward  |
 |  ----  | ----  |
