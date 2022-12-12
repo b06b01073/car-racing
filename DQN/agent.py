@@ -58,7 +58,7 @@ class Agent():
 
         self.tau = tau
         self.batch_size = batch_size
-        self.lr_scheduler = lr_scheduler.MultiStepLR(self.optim, milestones=[100, 300, 500, 700, 1400, 2100], gamma=0.1)
+        self.lr_scheduler = lr_scheduler.MultiStepLR(self.optim, milestones=[100, 300, 500, 700, 1400], gamma=0.1)
 
 
     def preprocess(self, obs):
@@ -131,17 +131,15 @@ class DDQNAgent(Agent):
     def __init__(self, action_dim, obs_dim, train_mode=True):
         super().__init__(action_dim, obs_dim, train_mode)
 
-    def step(self, stacked_obs):
+    def step(self, obs):
         # the concat_experiences is of the form (frames, [obs, action, reward, next_obs]), we need only the (4, obs) to make the decision 
         with torch.no_grad():
-            obs = torch.stack(stacked_obs).unsqueeze(0).to(device) 
+            obs = obs.unsqueeze(0).to(device) # obs.shape is (1, 4, h, w), the unsqueeze treat the obs as a batch with batch size = 1
 
-            action_scores = self.eval_network(obs)
-            if not self.train_mode:
-                return torch.argmax(action_scores).item()
+            action_scores = self.eval_network(obs).squeeze()
+
 
             # return the action based on epsilon-greedy strategy
-            
             return random.randint(0, self.action_dim - 1) if random.random() < self.eps else torch.argmax(action_scores).item()
 
 
@@ -156,19 +154,15 @@ class DDQNAgent(Agent):
 
         Q_eval = self.eval_network(obs).gather(1, actions.reshape(-1, 1)).squeeze()
 
-        policy_actions = torch.max(self.eval_network.forward(obs), dim=1)[1]
+        policy_actions = torch.max(self.eval_network(obs), dim=1)[1]
 
-        Q_target = self.target_network.forward(next_obs).gather(1, policy_actions.reshape(-1, 1)).squeeze()
+        Q_target = self.target_network(next_obs).gather(1, policy_actions.reshape(-1, 1)).squeeze()
 
         y = rewards + self.gamma * Q_target * (1 - terminated)
 
         loss = self.loss_fn(Q_eval, y)
         self.optim.zero_grad()
         loss.backward()
-
-        for param in self.eval_network.parameters():
-            param.grad.data.clamp_(-1, 1)
-
         self.optim.step() 
 
 def get_agent(algo, action_dim, obs_dim):

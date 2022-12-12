@@ -9,23 +9,21 @@ class CNN(nn.Module):
         super().__init__()
 
         self.cnn = nn.Sequential(
-            nn.Conv2d(in_channels=4, out_channels=32, kernel_size=8, stride=4),
+            nn.Conv2d(in_channels=4, out_channels=64, kernel_size=8, stride=4),
             nn.ReLU(),
 
-            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=5, stride=3),
+            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=5, stride=2),
             nn.ReLU(),
         ).to(device)
 
         self.fc = nn.Sequential(
-            nn.Linear(1152, 256),
+            nn.Linear(2048, 64),
             nn.ReLU(),
-            nn.Linear(256, action_dim),
+            nn.Linear(64, action_dim),
         ).to(device)
 
     def forward(self, x):
-        save_image(x[0][1], 'image/before_cnn.png')
         x = self.cnn(x)
-        save_image(x[0][1] / 255, 'image/after_cnn.png')
 
         x = self.fc(x.view(x.shape[0], -1))
 

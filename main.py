@@ -8,49 +8,47 @@ import datetime
 from torchvision.utils import save_image
 import argparse
 from gym.wrappers import FrameStack
+import collections
+from statistics import mean
 
 # Average reward of random policy: -55.70347185719232, std: 4.753479622453348
 
 def main(algo):
     env = gym.make('CarRacing-v2', continuous=False)
     env = FrameStack(env, num_stack=4)
+    print(env.action_space.n)
 
     buffer_capacity = 100000
     replay_buffer = ReplayBuffer(buffer_capacity)
 
-    episodes = 3000
+    episodes = 2000
     update_interval = 10
-    print(env.action_space.n)
+    eps_decay_interval = 3000 
+
+
     agent = Agent.get_agent(algo, env.action_space.n, env.observation_space)    
     total_rewards = []
+    eps_history = []
     check_points = [x for x in range(0, episodes + 1, 50)]
+    reward_window = collections.deque(maxlen=100)
+    reward_means = []
     step = 0
-    losses = []
 
     start_time = time.time()
     for i in range(episodes):
         obs, _ = env.reset()
         total_reward = 0
         episode_loss = 0
-
-
-        # obs = ignore_frames(env, frames=30)
+        eps_history.append(agent.eps)
 
         processed_obs = agent.preprocess(obs)
 
-        save_image(processed_obs[0] / 255, 'image/first_game_screen.png')
-
-
-        game_step = 0
         while True:
             action = agent.step(processed_obs)
-            # print(action)
-            game_step += 1
 
             next_obs, reward, terminated, truncated, _ = env.step(action)
 
             total_reward += reward
-            # print(reward)
 
             processed_next_obs = agent.preprocess(next_obs)
 
@@ -59,11 +57,11 @@ def main(algo):
             processed_obs = processed_next_obs
 
             if agent.batch_size <= len(replay_buffer):
-                episode_loss += agent.learn(replay_buffer)
+                agent.learn(replay_buffer)
                 
 
             step += 1
-            if step % 3000 == 0:
+            if step % eps_decay_interval == 0:
                 agent.eps_scheduler(mode='linear')
 
             if terminated or truncated:
@@ -72,10 +70,9 @@ def main(algo):
 
         if i % update_interval == 0:
             agent.hard_update()
+
         agent.lr_scheduler.step()
 
-        with torch.no_grad():
-            losses.append(torch.sum(torch.abs(episode_loss)).item() / game_step)
         total_rewards.append(total_reward)
 
         cur_time = time.time()
@@ -84,23 +81,30 @@ def main(algo):
 
 
         if i in check_points:
-            torch.save(agent.eval_network, f'DQN/model/agent_params_{i}.pth')
+            torch.save(agent.eval_network, f'DQN/model/{algo}/agent_params_{i}.pth')
+
+        reward_window.append(total_reward)
+        reward_means.append(mean(reward_window))
 
 
-        plt.plot(total_rewards)
+        # plot the result
+        plt.plot(total_rewards, label='Total Reward')
         # plt.plot(avg_rewards)
-        plt.savefig('rewards')
+        plt.plot(reward_means, label='Average Reward')
+        plt.xlabel('Episode')
+        plt.ylabel('Reward')
+        plt.legend(loc="upper left")
+        plt.title(algo)
+
+        plt.savefig(f'result/{algo}/reward')
         plt.close()     
 
-        plt.plot(losses)
-        plt.savefig('losses')
+        plt.plot(eps_history)
+        plt.title('Exploration Rate')
+        plt.xlabel('Episode')
+        plt.ylabel('Epsilon')
+        plt.savefig(f'result/{algo}/eps')
         plt.close()
-
-
-def ignore_frames(env, frames=30):
-    for _ in range(frames):
-        obs, _, _, _, _ = env.step(3)
-    return obs
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
