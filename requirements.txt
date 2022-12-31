@@ -1,0 +1,66 @@
+ale-py==0.8.0
+AutoROM==0.4.2
+AutoROM.accept-rom-license==0.4.2
+box2d-py==2.3.5
+brotlipy==0.7.0
+certifi @ file:///croot/certifi_1665076670883/work/certifi
+cffi @ file:///tmp/abs_98z5h56wf8/croots/recipe/cffi_1659598650955/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+click==8.1.3
+cloudpickle @ file:///home/conda/feedstock_root/build_artifacts/cloudpickle_1662587369221/work
+contourpy==1.0.6
+cryptography @ file:///tmp/build/80754af9/cryptography_1652101588599/work
+cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
+decorator==4.4.2
+fonttools==4.25.0
+future @ file:///home/conda/feedstock_root/build_artifacts/future_1649010148175/work
+glfw==2.5.5
+graphviz==0.20.1
+gym==0.26.2
+gym-notices==0.0.8
+Gymnasium==0.26.3
+gymnasium-notices==0.0.1
+idna @ file:///tmp/build/80754af9/idna_1637925883363/work
+imageio==2.22.4
+imageio-ffmpeg==0.4.7
+importlib-resources==5.10.0
+kaggle==1.5.12
+kiwisolver @ file:///opt/conda/conda-bld/kiwisolver_1653292039266/work
+lockfile==0.12.2
+matplotlib==3.6.2
+mkl-fft==1.3.1
+mkl-random @ file:///home/builder/ci_310/mkl_random_1641843545607/work
+mkl-service==2.4.0
+moviepy==1.0.3
+munkres==1.1.4
+numpy @ file:///tmp/abs_653_j00fmm/croots/recipe/numpy_and_numpy_base_1659432701727/work
+opencv-python==4.6.0.66
+packaging @ file:///tmp/build/80754af9/packaging_1637314298585/work
+pandas==1.4.3
+Pillow==9.2.0
+ply==3.11
+proglog==0.1.10
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pygame==2.1.0
+pyglet @ file:///home/conda/feedstock_root/build_artifacts/pyglet_1661198486127/work
+pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
+pyparsing @ file:///opt/conda/conda-bld/pyparsing_1661452539315/work
+PyQt5-sip==12.11.0
+PySocks @ file:///home/builder/ci_310/pysocks_1640793678128/work
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
+python-slugify==6.1.2
+pytz==2022.2.1
+requests @ file:///opt/conda/conda-bld/requests_1657734628632/work
+sip @ file:///tmp/abs_44cd77b_pu/croots/recipe/sip_1659012365470/work
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+swig==4.1.0
+text-unidecode==1.3
+toml @ file:///tmp/build/80754af9/toml_1616166611790/work
+torch==1.12.1
+torchaudio==0.12.1
+torchvision==0.13.1
+torchviz==0.0.2
+tornado @ file:///opt/conda/conda-bld/tornado_1662061693373/work
+tqdm==4.64.0
+typing_extensions @ file:///tmp/abs_ben9emwtky/croots/recipe/typing_extensions_1659638822008/work
+urllib3 @ file:///tmp/abs_5dhwnz6atv/croots/recipe/urllib3_1659110457909/work
