@@ -11,7 +11,7 @@ https://user-images.githubusercontent.com/56951221/207053746-de6b0daa-d1b8-43d9-
 Note: Details of the environment such as reward, observation space and action space is in the link [here](https://www.gymlibrary.dev/environments/box2d/car_racing/#car-racing). 
 
 ## Model Architecture
-The game screen is first transformed to grayscale image and cropped in the center, then it is stacked with the next 3 frames of the gameplay which goes through the same process to form a single observation record, this preprocessing method is similar to the method proposed by DeepMind [here](https://arxiv.org/pdf/1312.5602.pdf). The observation is then passed to the dueling DQN, which is compose of convolutional layers and fully connected layers. The visualization of the duel DQN model architecture is down below.
+The game screen is first transformed to grayscale image and cropped in the center, then it is stacked with the next 3 frames of the gameplay which goes through the same process to form a single observation record, this preprocessing method is similar to the method proposed by DeepMind [here](https://arxiv.org/pdf/1312.5602.pdf). The observation is then passed to the dueling DQN, which is composed of convolutional layers and fully connected layers. The visualization of the dueling DQN model architecture is down below.
 
 ![Model architecture](https://github.com/b06b01073/atari/blob/master/image/model.png)
 
