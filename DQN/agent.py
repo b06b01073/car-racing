@@ -40,14 +40,11 @@ class Agent():
         self.target_network.load_state_dict(self.eval_network.state_dict())
 
 
-        print(f'DQNAgent: The network is on {device}')
-
-
         self.train_mode = train_mode
 
         self.lr = lr
         self.loss_fn = nn.MSELoss()
-        self.optim = torch.optim.RMSprop(self.eval_network.parameters(), lr=lr, weight_decay=0.01)
+        self.optim = torch.optim.RMSprop(self.eval_network.parameters(), lr=lr, weight_decay=1e-4)
 
         self.gamma = gamma
         self.eps = eps
@@ -58,7 +55,7 @@ class Agent():
 
         self.tau = tau
         self.batch_size = batch_size
-        self.lr_scheduler = lr_scheduler.MultiStepLR(self.optim, milestones=[100, 300, 500, 700, 1400], gamma=0.1)
+        self.lr_scheduler = lr_scheduler.MultiStepLR(self.optim, milestones=[100, 300, 500, 700, 1400], gamma=0.5)
 
 
     def preprocess(self, obs):
@@ -119,10 +116,13 @@ class DQNAgent(Agent):
         Q_target = torch.max(self.target_network(next_obs.to(device)), dim=1)[0]
         y = rewards.to(device) + self.gamma * Q_target * (1 - terminals.to(device))
 
-        loss = self.loss_fn(Q_eval, y)
+        loss = self.loss_fn(Q_eval, y.detach())
         self.optim.zero_grad()
         loss.backward()
         self.optim.step() 
+
+
+        self.soft_update()
 
         return loss
 
@@ -154,16 +154,21 @@ class DDQNAgent(Agent):
 
         Q_eval = self.eval_network(obs).gather(1, actions.reshape(-1, 1)).squeeze()
 
-        policy_actions = torch.max(self.eval_network(obs), dim=1)[1]
+        policy_actions = torch.argmax(self.target_network(next_obs), dim=1)
+        # print(torch.max(self.target_network(next_obs), dim=1))
 
-        Q_target = self.target_network(next_obs).gather(1, policy_actions.reshape(-1, 1)).squeeze()
+        Q_target = self.eval_network(next_obs).gather(1, policy_actions.reshape(-1, 1)).squeeze()
 
         y = rewards + self.gamma * Q_target * (1 - terminated)
 
-        loss = self.loss_fn(Q_eval, y)
+        loss = self.loss_fn(Q_eval, y.detach())
         self.optim.zero_grad()
         loss.backward()
         self.optim.step() 
+
+        self.soft_update()
+
+        return loss
 
 def get_agent(algo, action_dim, obs_dim):
     if algo == 'DQN':

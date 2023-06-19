@@ -23,7 +23,7 @@ def main(algo):
 
     episodes = 2000
     update_interval = 10
-    eps_decay_interval = 3000 
+    eps_decay_interval = 1000
 
 
     agent = Agent.get_agent(algo, env.action_space.n, env.observation_space)    
@@ -36,17 +36,19 @@ def main(algo):
 
     start_time = time.time()
     for i in range(episodes):
-        obs, _ = env.reset()
+        obs = env.reset()
         total_reward = 0
         episode_loss = 0
         eps_history.append(agent.eps)
 
         processed_obs = agent.preprocess(obs)
 
+        total_loss = 0
+
         while True:
             action = agent.step(processed_obs)
 
-            next_obs, reward, terminated, truncated, _ = env.step(action)
+            next_obs, reward, terminated,  _ = env.step(action)
 
             total_reward += reward
 
@@ -57,27 +59,25 @@ def main(algo):
             processed_obs = processed_next_obs
 
             if agent.batch_size <= len(replay_buffer):
-                agent.learn(replay_buffer)
+                total_loss += agent.learn(replay_buffer)
                 
 
             step += 1
             if step % eps_decay_interval == 0:
                 agent.eps_scheduler(mode='linear')
 
-            if terminated or truncated:
+            if terminated:
                 break
             
 
-        if i % update_interval == 0:
-            agent.hard_update()
-
+       
         agent.lr_scheduler.step()
 
         total_rewards.append(total_reward)
 
         cur_time = time.time()
         time_left = str(datetime.timedelta(seconds=(cur_time - start_time) / (i + 1) * (episodes - (i + 1))))
-        print(f'Episode: {i + 1}, Total reward: {total_reward},  Eps: {agent.eps}, Time Left: {time_left}')
+        print(f'Episode: {i + 1}, Total reward: {total_reward},  Eps: {agent.eps}, Time Left: {time_left}, Total Loss: {total_loss}')
 
 
         if i in check_points:

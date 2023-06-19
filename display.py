@@ -13,8 +13,6 @@ algo = args.algo
 model_path = f'DQN/model/{algo}/agent_params_{args.model}.pth'
 
 
-
-
 env = gym.make('CarRacing-v2', continuous=False, render_mode="rgb_array")
 env = FrameStack(env, num_stack=4)
 env = RecordVideo(env, 'videos')
@@ -22,17 +20,17 @@ agent = get_agent(algo, env.action_space.n, env.observation_space)
 agent.eval_network = torch.load(model_path, map_location='cuda')
 agent.eps = 0
 
-obs, _ = env.reset()
+obs = env.reset()
 total_reward = 0
 processed_obs = agent.preprocess(obs)
 while True:
     # env.render()
     with torch.no_grad():
         action = agent.step(processed_obs)
-    next_obs, reward, terminated, truncated, _ = env.step(action)
-    processed_next_obs = agent.preprocess(next_obs)
-    processed_obs = processed_next_obs
+        next_obs, reward, terminated,  _ = env.step(action)
+        processed_next_obs = agent.preprocess(next_obs)
+        processed_obs = processed_next_obs
 
-    if terminated or truncated:
+    if terminated:
         # print('terminated by ', terminated)
         break
